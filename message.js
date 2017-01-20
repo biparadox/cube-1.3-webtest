@@ -6,8 +6,8 @@
 //var type_list={MESSAGE:{},LOGIN:{}};
 //type_list["MESG"]={LOGIN_INFO:{},RETURN:{}};
 
-function Cube_msg(type) {
-    this.data={HEAD:{tag:"MESG",version:65537,record_type:type,
+function Cube_msg(type,subtype) {
+    this.data={HEAD:{tag:"MESG",version:65537,record_type:type,record_subtype:subtype,
         flow:0,record_num:0,expand_num:0,nonce:''},RECORD:[],EXPAND:[]};
 }
 Cube_msg.prototype = {

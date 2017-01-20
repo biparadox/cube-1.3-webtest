@@ -80,7 +80,7 @@
         }
 
         var message = {message:input.value};
-        var msg = new Cube_msg("MESG");
+        var msg = new Cube_msg("MESSAGE","BASE_MSG");
         msg.addrecord(message);
         wsock.send(msg.output())
     };
