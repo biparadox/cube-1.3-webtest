@@ -14,7 +14,7 @@
     <br />
 
     用户名：
-    <input type="plaintext" id="plain" value="hujun"/>
+    <input type="plaintext" id="plain" value="zhaowen"/>
     <br />
 
     口令  ：
@@ -75,7 +75,7 @@
         }
 
         var login_info = {user:input.value,passwd:passwd.value};
-        var msg = new Cube_msg("LOGI");
+        var msg = new Cube_msg("CRYPTO_DEMO","LOGIN_INFO");
         msg.addrecord(login_info);
         wsock.send(msg.output())
     };
