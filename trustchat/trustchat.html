@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>可信社交平台登录</title>
+	
+	<link rel="stylesheet" type="text/css" href="./source_login/default.css">
+	<link rel="stylesheet" type="text/css" href="./source_login/styles.css">
+</head>
+<body>
+<!--内容在此-->
+
+
+
+
+<script src="./exchange.js"></script>
+<script type="text/javascript" src="./source_login/stopExecutionOnTimeout.js"></script>
+<script type="text/javascript" src="./source_login/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="./source_login/jquery-ui.min.js"></script>
+<script src="./api/main.js"></script>
+<script src="./api/message.js"></script>
+<script>
+	$('body').append(loginHTML);
+	$('body p').css('color','#5B5E6F');
+
+	var isconnected = false;
+ 	var wsock;
+    var curr_user;
+    var curr_msg;
+
+    var plainmsg = {"head":"","record":"","expand":""};
+    plainmsg["head"]={"tag":"MESG","version":65537};
+    var jsonstr = JSON.stringify(plainmsg);
+
+
+
+
+	$('input[type="submit"]').click(function () {
+	    $('.login').addClass('test');
+	    setTimeout(function () {
+	        $('.login').addClass('testtwo');
+	    }, 300);
+	    setTimeout(function () {
+	        $('.authent').show().animate({ right: -320 }, {
+	            easing: 'easeOutQuint',
+	            duration: 600,
+	            queue: false
+	        });
+	        $('.authent').animate({ opacity: 1 }, {
+	            duration: 200,
+	            queue: false
+	        }).addClass('visible');
+
+	        mywebsockinit();
+	    }, 500);
+
+
+	});
+	function toWebchat(){
+		$("body *:not('script')").each(function(){
+				$(this).remove();
+		});
+	}
+	$('input[type="text"],input[type="password"]').focus(function () {
+	    $(this).prev().animate({ 'opacity': '1' }, 200);
+	});
+	$('input[type="text"],input[type="password"]').blur(function () {
+	    $(this).prev().animate({ 'opacity': '.5' }, 200);
+	});
+	$('input[type="text"],input[type="password"]').keyup(function () {
+	    if (!$(this).val() == '') {
+	        $(this).next().animate({
+	            'opacity': '1',
+	            'right': '30'
+	        }, 200);
+	    } else {
+	        $(this).next().animate({
+	            'opacity': '0',
+	            'right': '20'
+	        }, 200);
+	    }
+	});
+	var open = 0;
+	$('.tab').click(function () {
+	    $(this).fadeOut(200, function () {
+	        $(this).parent().animate({ 'left': '0' });
+	    });
+	});
+
+	function aftAniSuccess(){
+		setTimeout(function () {
+	        $('.authent').show().animate({ right: 90 }, {
+	            easing: 'easeOutQuint',
+	            duration: 600,
+	            queue: false
+	        });
+	        $('.authent').animate({ opacity: 0 }, {
+	            duration: 200,
+	            queue: false
+	        }).addClass('visible');
+	        $('.login').removeClass('testtwo');
+	    }, 1500);
+	    setTimeout(function () {
+	        $('.login').removeClass('test');
+	        $('.login div').fadeOut(123);
+	    }, 2200);
+
+	    setTimeout(function () {
+	        $('.success').fadeIn();
+	    }, 2600);
+
+	    setTimeout(function () {
+	        toWebchat();
+	        $('body').append(webchatHTML);
+	        $('body p').css('color','#FFFFFF');
+	        initwebchat(userlistmsg);
+	    }, 3500);
+	}
+	function aftAniFail(){
+		setTimeout(function () {
+	        $('.authent').show().animate({ right: 90 }, {
+	            easing: 'easeOutQuint',
+	            duration: 600,
+	            queue: false
+	        });
+	        $('.authent').animate({ opacity: 0 }, {
+	            duration: 200,
+	            queue: false
+	        }).addClass('visible');
+	        $('.login').removeClass('testtwo');
+	    }, 1500);
+	    setTimeout(function () {
+	        $('.login').removeClass('test');
+	        $('.login div').fadeOut(123);
+	    }, 2200);
+
+	    setTimeout(function () {
+	    	$('.success h2').html("登录失败");
+	    	$('.success p').html("请刷新从来");
+	        $('.success').fadeIn();
+	    }, 2600);
+
+	    /*setTimeout(function () {
+	        toWebchat();
+	        $('body').append(webchatHTML);
+	        $('body p').css('color','#FFFFFF');
+	        initwebchat();
+	    }, 3500);*/
+	}
+
+
+	var userlistmsg;
+
+	 function mywebsockinit() {
+        if (isconnected) {
+            alert("已连接服务器！")
+            return;
+        }
+        var netaddr=document.getElementById("addr");
+        var netport=document.getElementById("port");
+
+ //       wsock = new WebSocket('ws://192.168.159.135:12888', 'cube-wsport');
+        wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value, 'cube-wsport');
+        //alert(netaddr.value+":"+netport.value);
+        wsock.onopen = function (e) {
+            if (!isconnected) {
+                isconnected = true;
+                //alert("连接成功！");
+                VerifyID();
+                /*aftAniSuccess();*/
+            }
+            return;
+        };
+        wsock.onclose = function (e) {
+        	//alert("1111111111");
+        };
+        wsock.onerror = function (e) {
+        	//console.log("2222222222");
+        	aftAniFail();
+        	/*myFunction();*/
+        };
+        wsock.onmessage = function (e) {
+            var msg;
+            msg = e.data;
+            if (msg.replace(/(^s*)|(s*$)/g, "").length != 0) {
+                msg=JSON.parse(msg);
+                console.log(msg);
+                console.log(msg.HEAD.record_type);
+                if(msg.HEAD.record_type=="MSG_EXPAND"){
+                	;
+                }
+                else if(msg.HEAD.record_type=="CRYPTO_DEMO"){
+                    if(msg.HEAD.record_subtype=="VERIFY_RETURN")
+                    {
+                	    if(msg.RECORD[0].retval==1) {
+                            aftAniSuccess();
+                        }
+
+                	}
+                    else if(msg.HEAD.record_subtype=="CHAT_MSG")
+                    {
+                        curr_msg=msg.RECORD[0];
+                        //只存本次网页打开后的messageLog，正在考虑要不要存放在某个文档里,还有图片路径要不要换成id之类的得和后台相关
+                        /*{time:"9:31",user:"YYC",photo:"./dist/images/1.jpg",msg:"Hello"},*/
+                        //{time:"9:31",user:"平台助手",photo:"./dist/images/2.jpg",msg:"Hello"},
+                        if(curr_msg.sender == curr_user) {
+                                createSelfmsg(curr_msg.time,"./dist/images/1.jpg", curr_msg.msg);
+                        }
+                        else
+                        {
+                                createOthmsg(curr_msg.time, "./dist/images/2.jpg", curr_msg.msg);
+                        }
+                    }
+                    else if(msg.HEAD.record_subtype=="LOGIN_INFO"){
+                        userlistmsg=msg;
+                    }
+                }
+            }
+
+            //console.log(msg.HEAD);
+            
+        }
+    }
+
+    function VerifyID() {
+        if(!isconnected)
+        {
+            alert("连接未建立！")
+            return;
+        }
+        var input = document.getElementById("plain");
+        var passwd = document.getElementById("cipher");
+        curr_user=input.value;
+        var login_info = {user:input.value,passwd:passwd.value};
+        //console.log(login_info);
+        var msg = new Cube_msg("CRYPTO_DEMO","LOGIN_INFO");
+        msg.addrecord(login_info);
+        wsock.send(msg.output())
+    };
+
+</script>
+</body> 
+</html>
