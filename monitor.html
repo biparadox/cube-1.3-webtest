@@ -62,8 +62,8 @@ function mywebsockinit() {
             console.log(msg.HEAD.record_type);
             if(msg.HEAD.record_type=="CRYPTO_DEMO"){
                 if(msg.HEAD.record_subtype=='CHAT_MSG') {
-                    if (msg.RECORD.BIN_FORMAT)
-                        insertcrypto(msg.RECORD.BIN_FORMAT);
+                    if (msg.RECORD[0].BIN_FORMAT)
+                        insertcrypto(msg.RECORD[0].BIN_FORMAT);
                     else {
                         curr_msg = msg.RECORD[0];
                         insert(curr_msg);
@@ -83,9 +83,8 @@ function insertcrypto(msg){
     row.id=rowcounter;
     var sender=row.insertCell(0);
     var receiver=row.insertCell(1);
-    var message_type=row.insertCell(2);
-    var message_time=row.insertCell(3);
-    var cryptodata=row.insertCell(4);
+    var message_time=row.insertCell(2);
+    var cryptodata=row.insertCell(3);
     cryptodata.width=100;
     cryptodata.innerHTML=""+msg;
     rowcounter++;
@@ -98,21 +97,18 @@ function insert(msg){
 	row.id=rowcounter;
 	var sender=row.insertCell(0);
 	var receiver=row.insertCell(1);
-	var message_type=row.insertCell(2);
-    var message_time=row.insertCell(3);
-	var message_content=row.insertCell(4);
-	var delete_message=row.insertCell(5);
+	var message_time=row.insertCell(2);
+	var message_content=row.insertCell(3);
+//	var delete_message=row.insertCell(5);
 	sender.width=100;
 	receiver.width=100;
-	message_type.width=100;
 	message_content.width=100;
 	message_time.width=100;
 	sender.innerHTML=""+msg.sender;
 	receiver.innerHTML=""+msg.receiver;
-	message_type.innerHTML=""+msg.flag;
 	message_content.innerHTML=""+msg.msg;
 	message_time.innerHTML=""+msg.time;
-	delete_message.innerHTML="	<input type=button name=bdelAtt value=测试 onclick=delAtt('"+rowcounter+"')>";
+//	delete_message.innerHTML="	<input type=button name=bdelAtt value=测试 onclick=delAtt('"+rowcounter+"')>";
  //row.className=linestyle;
 
  //cell = row.insertCell();
@@ -157,6 +153,7 @@ function delAtt(rowid){
     delRow(rowid);
     document.forms[0].kc.value=rowcounter;
 }
+/*
 function FlushAttack()
 {
     var msg = new Cube_msg("REQC");
@@ -165,7 +162,7 @@ function FlushAttack()
     wsock.send(msg.output());
     return;
 }
-
+*/
 </script>
 
 
@@ -178,12 +175,11 @@ function FlushAttack()
  <tr>
 	<td width="100">发送者</td>
 	<td width="100">接收者</td>
-	<td width="100">消息属性</td>
     <td width="100">消息时间</td>
     <td width="300">消息内容</td>
  </tr>
  </table>
 </form>
-<input type="button" name="badd" value="刷屏攻击" onclick="FlushAttack()">
+<!--<input type="button" name="badd" value="刷屏攻击" onclick="FlushAttack()"> -->
 </body>
 </html>
