@@ -1,0 +1,189 @@
+<!--
+date:2005-11-25
+author:sparklet-sun
+function:dynamic table usage
+-->
+<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>可信聊天程序监控端 </title>
+    <style>
+        table{
+            table-layout:fixed;
+            word-break: break-all;
+            word-wrap:break-word;
+        }
+    </style>
+</head>
+<body>
+<script src="message.js"></script>
+<script language="JavaScript" type="text/JavaScript">
+
+var rowcounter = 0;
+var message;
+var isconnected = false;
+var wsock;
+var curr_msg;
+mywebsockinit();
+
+function mywebsockinit() {
+    if (isconnected) {
+        alert("已连接服务器！")
+        return;
+    }
+//    var netaddr=document.getElementById("addr");
+//    var netport=document.getElementById("port");
+
+    wsock = new WebSocket('ws://192.168.159.135:14888', 'cube-wsport');
+//    wsock = new WebSocket('ws://119.90.126.39:14888', 'cube-wsport');
+
+//    wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value, 'cube-wsport');
+    //alert(netaddr.value+":"+netport.value);
+    wsock.onopen = function (e) {
+        if (!isconnected) {
+            isconnected = true;
+            alert("连接成功！");
+            /*aftAniSuccess();*/
+        }
+        return;
+    };
+    wsock.onclose = function (e) {
+        //alert("1111111111");
+    };
+    wsock.onerror = function (e) {
+        //console.log("2222222222");
+        alert("连接失败！");
+        /*myFunction();*/
+    };
+    wsock.onmessage = function (e) {
+        var msg;
+        msg = e.data;
+        if (msg.replace(/(^s*)|(s*$)/g, "").length != 0) {
+            msg=JSON.parse(msg);
+            console.log(msg);
+            console.log(msg.HEAD.record_type);
+            if(msg.HEAD.record_type=="CRYPTO_DEMO"){
+                if(msg.HEAD.record_subtype=='CHAT_MSG') {
+                    if (msg.RECORD.BIN_FORMAT)
+                        insertcrypto(msg.RECORD.BIN_FORMAT);
+                    else {
+                        curr_msg = msg.RECORD[0];
+                        insert(curr_msg);
+                    }
+                }
+            }
+
+        }
+
+        //console.log(msg.HEAD);
+
+    }
+}
+function insertcrypto(msg){
+    message=document.getElementById('table');
+    var row = message.insertRow();
+    row.id=rowcounter;
+    var sender=row.insertCell(0);
+    var receiver=row.insertCell(1);
+    var message_type=row.insertCell(2);
+    var message_time=row.insertCell(3);
+    var cryptodata=row.insertCell(4);
+    cryptodata.width=100;
+    cryptodata.innerHTML=""+msg;
+    rowcounter++;
+}
+
+
+function insert(msg){
+	message=document.getElementById('table');
+	var row = message.insertRow();
+	row.id=rowcounter;
+	var sender=row.insertCell(0);
+	var receiver=row.insertCell(1);
+	var message_type=row.insertCell(2);
+    var message_time=row.insertCell(3);
+	var message_content=row.insertCell(4);
+	var delete_message=row.insertCell(5);
+	sender.width=100;
+	receiver.width=100;
+	message_type.width=100;
+	message_content.width=100;
+	message_time.width=100;
+	sender.innerHTML=""+msg.sender;
+	receiver.innerHTML=""+msg.receiver;
+	message_type.innerHTML=""+msg.flag;
+	message_content.innerHTML=""+msg.msg;
+	message_time.innerHTML=""+msg.time;
+	delete_message.innerHTML="	<input type=button name=bdelAtt value=测试 onclick=delAtt('"+rowcounter+"')>";
+ //row.className=linestyle;
+
+ //cell = row.insertCell();
+ //cell.align = 'center';
+
+ //cell.className=linestyle;
+	//cell.innerHTML="<input type=text size=30 name=file"+rowcounter+"><input type=text size=30 name=file"+rowcounter+"> <input type=button name=bdelAtt value=ɾ����¼ onclick=delAtt('"+rowcounter+"')>";
+	rowcounter++;
+
+}
+
+function delRow(rowid){
+
+    var count = message.rows.length;
+ for (i = 0; i < count; i++) {
+  if (rowid == message.rows(i).id){
+   message.deleteRow(i);
+            rowcounter--;
+            return;
+  }
+ }
+}
+
+
+function delAll(){
+ var count = message.rows.length;
+ for (i=0;i<count;i++){
+  message.deleteRow(i);
+ }
+}
+
+function insertData(){
+    insert();
+}
+
+function  addAtt(){
+    insertData();
+    document.forms[0].kc.value=rowcounter;
+}
+
+function delAtt(rowid){
+    delRow(rowid);
+    document.forms[0].kc.value=rowcounter;
+}
+function FlushAttack()
+{
+    var msg = new Cube_msg("REQC");
+    var record = {"tag":"MSGD"};
+    msg.addrecord(record);
+    wsock.send(msg.output());
+    return;
+}
+
+</script>
+
+
+<form>
+    <!-- counter -->
+<input type="hidden" name="kc">
+
+ <!--dynamic table area ..-->
+ <table id="table" border="1">
+ <tr>
+	<td width="100">发送者</td>
+	<td width="100">接收者</td>
+	<td width="100">消息属性</td>
+    <td width="100">消息时间</td>
+    <td width="300">消息内容</td>
+ </tr>
+ </table>
+</form>
+<input type="button" name="badd" value="刷屏攻击" onclick="FlushAttack()">
+</body>
+</html>
