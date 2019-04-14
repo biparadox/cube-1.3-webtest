@@ -7,9 +7,9 @@
 <form>
 
     服务器地址：
-    <input type="plaintext" id="addr" value="192.168.159.135" />
+    <input type="plaintext" id="addr" value="192.168.159.134" />
     端口号：
-    <input type="plaintext" id="port" value="13888" />
+    <input type="plaintext" id="port" value="13999" />
 
     <br />
 
@@ -43,7 +43,7 @@
         var netport=document.getElementById("port");
 
  //       wsock = new WebSocket('ws://192.168.159.135:12888', 'cube-wsport');
-        wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value, 'cube-wsport');
+        wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value+'/');
 
         wsock.onopen = function (e) {
             if (!isconnected) {

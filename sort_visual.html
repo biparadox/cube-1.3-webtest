@@ -69,7 +69,7 @@
         var netaddr=document.getElementById("addr");
         var netport=document.getElementById("port");
         var b=new sort_show();
-        wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value, 'cube-wsport');
+        wsock = new WebSocket('ws://'+netaddr.value+':'+netport.value+'/', );
 
         wsock.onopen = function (e) {
             if (!isconnected) {
